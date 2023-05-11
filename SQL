@@ -1,0 +1,104 @@
+import sqlite3
+conn = sqlite3.connect('salespeople.db')
+
+conn.execute('''
+ CREATE TABLE SalesPeople (
+     Snum INT PRIMARY KEY,
+     Sname AB(255) UNIQUE NOT NULL,
+     City AB(255),
+     Comm FLOAT
+ )
+ ''')
+
+conn.execute('''
+INSERT INTO SalesPeople (Snum, Sname, City, Comm)
+VALUES
+   (1001, 'Peel', 'London', 0.12),
+   (1002, 'Serres', 'Sanjose', 0.13),
+   (1004, 'Motika', 'London', 0.11),
+   (1007, 'Rifkin', 'Barcelona', 0.15),
+   (1003, 'Axelrod', 'Newyork', 0.10)
+''')
+conn.execute('''
+CREATE TABLE Customers (
+    Cnum INT PRIMARY KEY,
+    Cname AB(255),
+    City AB(255) NOT NULL,
+    Snum INT,
+    FOREIGN KEY (Snum) REFERENCES SalesPeople(Snum)
+)
+''')
+conn.execute('''
+INSERT INTO Customers (Cnum, Cname, City, Snum)
+VALUES
+   (2001, 'Hoffman', 'London', 1001),
+   (2002, 'Giovanni', 'Rome', 1003),
+   (2003, 'Liu', 'Sanjose', 1002),
+   (2004, 'Grass', 'Berlin', 1002),
+   (2006, 'Clemens', 'London', 1001),
+   (2008, 'Cisneros', 'Sanjose', 1007),
+   (2007, 'Pereira', 'Rome', 1004)
+''')
+conn.execute('''
+CREATE TABLE Orders (
+    Onum INT PRIMARY KEY,
+    Amt FLOAT,
+    Odate DATE,
+    Cnum INT,
+    Snum INT,
+    FOREIGN KEY (Cnum) REFERENCES Customers(Cnum),
+    FOREIGN KEY (Snum) REFERENCES SalesPeople(Snum)
+)
+''')
+conn.execute('''
+INSERT INTO Orders (Onum, Amt, Odate, Cnum, Snum)
+VALUES (3001, 18.69, '1990-10-03',2008, 1007),
+       (3003, 767.19, '1990-10-03',2001, 1001),
+       (3002, 1900.10, '1990-10-03',2007, 1004),
+       (3005, 5160.45, '1990-10-03',2003, 1002),
+       (3006, 1098.16, '1990-10-03',2008, 1007),
+       (3009, 1713.23, '1990-10-04',2002, 1003),
+       (3007, 75.75, '1990-10-04',2004, 1002),
+       (3008, 4273.00, '1990-10-05',2006, 1001),
+       (3010, 1309.95, '1990-10-06',2004, 1002),
+       (3011, 9891.88, '1990-10-06',2006, 1001)
+''');
+
+conn.commit()
+conn.close()
+
+# 1 Count the number of sales person whose name begin with 'a'/A.
+
+SELECT COUNT(*) AS 'Count;
+FROM SalesPeople
+WHERE Sname LIKE 'A%';
+
+# 2, Display all the Salesperson Whose All orders Worth is more than Rs2000.
+
+SELECT sp.Snum, sp.Sname
+FROM SalesPeople sp
+INNER JOIN Orders o ON sp.Snum = o.Snum
+GROUP BY sp.Snum, sp.Sname
+HAVING SUM(o.Amt) > 2000;
+
+#3, count the number of salesperson belonging to Newyork.
+
+SELECT COUNT(DISTINCT sp. Snum) AS 'Count'
+FROM SalesPeople sp
+INNER JOIN Customers c ON sp.Snum = c.Snum
+WHERE c.City='Newyork';
+
+#4, Display the number of Salespeople belonging to London and belonging to Paris.
+
+SELECT City, COUNT(*) AS 'Count'
+FROM SalesPeople
+WHERE City IN('London', 'Paris')
+GROUP BY City;
+
+#5, Display the number of  orders taken by Salesperson and their date of orders.
+
+SELECT sp.Sname, o.Odate, COUNT(*) AS 'Number of Orders'
+FROM SalesPeople sp
+INNER JOIN Customers c ON sp.Snum = C.Snum
+INNER JOIN Orders o ON c.Cnum = o.Cnum AND c. Snum = o.Snum
+GROUP BY sp.Sname, o.Odate;
